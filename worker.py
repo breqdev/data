@@ -9,13 +9,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-r = redis.from_url(os.environ.get("REDIS_URL"))
+r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
 
 def refresh_spotify_token():
-    refresh_token = r.get(
-        f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:refresh"
-    ).decode("utf-8")
+    refresh_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:refresh")
     auth_response = requests.post(
         "https://accounts.spotify.com/api/token",
         {
@@ -38,15 +36,11 @@ def refresh_spotify_token():
 
 
 def get_playing():
-    auth_token = r.get(
-        f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access"
-    ).decode("utf-8")
+    auth_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access")
 
     if not auth_token:
         refresh_spotify_token()
-        auth_token = r.get(
-            f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access"
-        ).decode("utf-8")
+        auth_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access")
 
     playing = requests.get(
         "https://api.spotify.com/v1/me/player/currently-playing",
