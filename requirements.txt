@@ -4,3 +4,4 @@ flask
 python-dotenv
 schedule
 tweepy
+gunicorn
