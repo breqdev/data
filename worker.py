@@ -14,6 +14,9 @@ r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
 def refresh_spotify_token():
     refresh_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:refresh")
+    if not refresh_token:
+        return
+
     auth_response = requests.post(
         "https://accounts.spotify.com/api/token",
         {
@@ -41,6 +44,9 @@ def get_playing():
     if not auth_token:
         refresh_spotify_token()
         auth_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access")
+
+    if not auth_token:
+        return
 
     playing = requests.get(
         "https://api.spotify.com/v1/me/player/currently-playing",
