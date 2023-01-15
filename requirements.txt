@@ -1,0 +1,6 @@
+redis[hiredis]
+requests
+flask
+python-dotenv
+schedule
+tweepy
