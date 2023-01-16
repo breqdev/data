@@ -32,10 +32,12 @@ def refresh_spotify_token():
         auth_response.json()["access_token"],
         ex=3600,
     )
-    r.set(
-        f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:refresh",
-        auth_response.json()["refresh_token"],
-    )
+
+    if auth_response.json().get("refresh_token"):
+        r.set(
+            f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:refresh",
+            auth_response.json()["refresh_token"],
+        )
 
 
 def get_playing():
