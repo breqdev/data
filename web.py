@@ -1,5 +1,6 @@
 import os
 import redis
+import time
 import json
 import requests
 from flask import Flask, jsonify, redirect, request
@@ -36,6 +37,9 @@ def index():
                 "id": r.get("twitter:tweet:id"),
                 "text": r.get("twitter:tweet:text"),
                 "created_at": r.get("twitter:tweet:created_at"),
+            },
+            "beacon": {
+                "last_seen": r.get("beacon:last_seen"),
             },
         }
     )
@@ -76,6 +80,19 @@ def spotify_callback():
 
     r.set(f"spotify:auth:{user_id}:access", auth_token, ex=3600)
     r.set(f"spotify:auth:{user_id}:refresh", auth_response.json()["refresh_token"])
+
+    return "OK"
+
+
+@app.route("/beacon", methods=["POST"])
+def beacon():
+    data = request.get_json()
+    if data["token"] != os.environ.get("BEACON_TOKEN"):
+        return "Unauthorized", 401
+
+    r.set("beacon:last_seen", time.time())
+
+    # TODO: update data
 
     return "OK"
 
