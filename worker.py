@@ -106,7 +106,7 @@ schedule.every(1).minutes.do(get_github_activity)
 
 def get_tweets():
     resp = requests.get(
-        f"https://tacobelllabs.net/api/v1/accounts/{os.getenv('TWITTER_USER_ID')}/statuses"
+        f"https://tacobelllabs.net/api/v1/accounts/{os.getenv('MASTODON_USER_ID')}/statuses"
     )
     resp.raise_for_status()
 
