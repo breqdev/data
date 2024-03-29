@@ -40,6 +40,11 @@ def index():
             },
             "beacon": {
                 "last_seen": r.get("beacon:last_seen"),
+                "asn": r.get("beacon:asn"),
+                "timezone": r.get("beacon:timezone"),
+                "country": r.get("beacon:country"),
+                "region": r.get("beacon:region"),
+                "city": r.get("beacon:city"),
             },
         }
     )
@@ -92,7 +97,24 @@ def beacon():
 
     r.set("beacon:last_seen", time.time())
 
-    # TODO: update data
+    # IP address tracking
+    # trust that if the token's right, we're kind and aren't forging XFF :)
+    xff = request.headers.get("X-Forwarded-For")
+    if xff:
+        ip = xff.split(",")[0]
+    else:
+        ip = request.remote_addr
+
+    resp = requests.get(f"http://ip-api.com/json/{ip}")
+    resp.raise_for_status()
+
+    ip_data = resp.json()
+
+    r.set("beacon:asn", ip_data["as"])
+    r.set("beacon:timezone", ip_data["timezone"])
+    r.set("beacon:country", ip_data["countryCode"])
+    r.set("beacon:region", ip_data["region"])
+    r.set("beacon:city", ip_data["city"])
 
     return "OK"
 
