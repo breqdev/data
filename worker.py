@@ -4,7 +4,6 @@ import redis
 import schedule
 import json
 import time
-import tweepy
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -104,26 +103,19 @@ def get_github_activity():
 
 schedule.every(1).minutes.do(get_github_activity)
 
-twitter_auth = tweepy.OAuth1UserHandler(
-    os.getenv("TWITTER_CLIENT_KEY"),
-    os.getenv("TWITTER_CLIENT_SECRET"),
-    os.getenv("TWITTER_ACCESS_TOKEN"),
-    os.getenv("TWITTER_ACCESS_SECRET"),
-)
-twitter = tweepy.API(twitter_auth)
-
 
 def get_tweets():
-    tweets = twitter.user_timeline(user_id=os.getenv("TWITTER_USER_ID"), count=1)
+    resp = requests.get(
+        f"https://tacobelllabs.net/api/v1/accounts/{os.getenv('TWITTER_USER_ID')}/statuses"
+    )
+    resp.raise_for_status()
 
-    if not tweets:
-        return
-
+    tweets = resp.json()
     tweet = tweets[0]
 
-    r.set("twitter:tweet:id", tweet.id)
-    r.set("twitter:tweet:text", tweet.text)
-    r.set("twitter:tweet:created_at", tweet.created_at.isoformat())
+    r.set("twitter:tweet:id", tweet["id"])
+    r.set("twitter:tweet:text", tweet["content"])
+    r.set("twitter:tweet:created_at", tweet["created_at"])
 
 
 schedule.every(1).minutes.do(get_tweets)
