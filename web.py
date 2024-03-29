@@ -46,6 +46,13 @@ def index():
                 "region": r.get("beacon:region"),
                 "city": r.get("beacon:city"),
             },
+            "battery": {
+                "source": r.get("battery:source"),
+                "percentage": r.get("battery:percentage"),
+                "time_remaining": r.get("battery:time_remaining"),
+            },
+            "volume": r.get("volume"),
+            "focused_app": r.get("focused_app"),
         }
     )
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -96,6 +103,11 @@ def beacon():
         return "Unauthorized", 401
 
     r.set("beacon:last_seen", time.time())
+    r.set("battery:source", data["battery"]["source"])
+    r.set("battery:percentage", data["battery"]["percentage"])
+    r.set("battery:time_remaining", data["battery"]["time_remaining"])
+    r.set("volume", data["volume"])
+    r.set("focused_app", data["focused_app"])
 
     # IP address tracking
     # trust that if the token's right, we're kind and aren't forging XFF :)

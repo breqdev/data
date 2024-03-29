@@ -4,6 +4,8 @@ import requests
 import schedule
 import threading
 import pystray
+import subprocess
+import re
 from dotenv import load_dotenv
 from PIL import Image, ImageDraw
 
@@ -12,11 +14,53 @@ load_dotenv()
 enabled = True
 
 
+# Now drawing from 'AC Power'
+#  -InternalBattery-0 (id=22478947)       9%; AC attached; not charging present: true
+
+# Now drawing from 'Battery Power'
+#  -InternalBattery-0 (id=22478947)       9%; discharging; 0:38 remaining present: true
+#         Battery Warning: Early
+
+
 def ping():
+    output = subprocess.check_output(["pmset", "-g", "batt"]).decode("utf-8")
+    lines = output.split("\n")
+    try:
+        source = lines[0].removeprefix("Now drawing from '").split("'")[0]
+        percentage = int(re.search(r"\d+%", lines[1]).group()[:-1])
+        time = re.search(r"\d+:\d+", lines[1]).group()
+    except:
+        source = "Unknown"
+        percentage = 0
+        time = "0:00"
+
+    volume = subprocess.check_output(
+        ["osascript", "-e", "output volume of (get volume settings)"]
+    ).decode("utf-8")
+
+    focused_app = (
+        subprocess.check_output(
+            [
+                "osascript",
+                "-e",
+                'tell application "System Events" to get name of first application process whose frontmost is true',
+            ]
+        )
+        .decode("utf-8")
+        .strip()
+    )
+
     requests.post(
         os.environ.get("BEACON_URL"),
         json={
             "token": os.environ.get("BEACON_TOKEN"),
+            "battery": {
+                "source": source,
+                "percentage": percentage,
+                "time_remaining": time,
+            },
+            "volume": int(volume),
+            "focused_app": focused_app,
         },
     ).raise_for_status()
 
