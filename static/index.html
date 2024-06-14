@@ -14,10 +14,16 @@
                 color: lightgray;
                 text-align: center;
                 max-width: 600px;
-                margin: 0 auto;
+                margin: 32px auto;
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
+            }
+
+            a {
+                background-color: black;
+                color: lightgray;
+                text-decoration: none;
             }
 
             h1, h2, strong, #post {
@@ -28,7 +34,7 @@
                 border-width: 2px;
                 border-color: greenyellow;
                 border-style: solid;
-                padding: 0px 4px 4px 4px;
+                padding: 0px 12px 4px 12px;
                 margin-top: 32px;
             }
 
@@ -57,22 +63,25 @@
 
         <div>
             <h2>music</h2>
-            <p><a><strong id="track">track</strong> by <strong id="artist">artist</strong> on <strong id="album">album</strong></a></p>
+            <p id="track_listing"><a id="spotify_link"><strong id="track">track</strong> by <strong id="artist">artist</strong> on <strong id="album">album</strong></a></p>
+            <p id="no_music">not currently playing music</p>
         </div>
 
         <div>
             <h2>recent post</h2>
-            <p id="post">post</p>
+            <a id="post">post</a>
         </div>
 
         <div>
             <h2>git</h2>
-            <p><a><strong id="message">message</strong> in <strong id="repo">repo</strong></a></p>
+            <p><a id="github_link"><strong id="message">message</strong> in <strong id="repo">repo</strong></a></p>
         </div>
+
+        <p style="color: lightgray;">public JSON API available <a href="/data" style="color: greenyellow;">here</a></p>
 
         <script>
             async function update() {
-                const result = await fetch("/data");
+                const result = await fetch("https://data.breq.dev/data");
                 const data = await result.json();
                 console.log(data);
 
@@ -86,14 +95,25 @@
                 document.querySelector("#volume").textContent = data.volume;
                 document.querySelector("#focused_app").textContent = data.focused_app;
 
-                document.querySelector("#track").textContent = data.music.track;
-                document.querySelector("#artist").textContent = data.music.artist;
-                document.querySelector("#album").textContent = data.music.album;
+                if (data.music.track) {
+                    document.querySelector("#track_listing").style.display = "block";
+                    document.querySelector("#no_music").style.display = "none";
+
+                    document.querySelector("#track").textContent = data.music.track;
+                    document.querySelector("#artist").textContent = data.music.artist;
+                    document.querySelector("#album").textContent = data.music.album;
+                    document.querySelector("#spotify_link").href = `https://open.spotify.com/track/${data.music.spotify_id}`;
+                } else {
+                    document.querySelector("#track_listing").style.display = "none";
+                    document.querySelector("#no_music").style.display = "block";
+                }
 
                 document.querySelector("#post").innerHTML = data.posts.text;
+                document.querySelector("#post").href = `https://tacobelllabs.net/@breq/${data.posts.id}`;
 
                 document.querySelector("#message").innerHTML = data.git.commit.message;
                 document.querySelector("#repo").innerHTML = data.git.repo;
+                document.querySelector("#github_link").href = `https://github.com/${data.git.repo}/commit/${data.git.commit.sha}`;
 
 
                 setTimeout(update, 5000);
