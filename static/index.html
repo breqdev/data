@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>brooke location</title>
+        <style>
+            @font-face {
+                font-family: 'OCR A Extended';
+                src: url('/static/OCRA.ttf');
+            }
+
+            body {
+                font-family: 'OCR A Extended';
+                background-color: black;
+                color: lightgray;
+                text-align: center;
+                max-width: 600px;
+                margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            h1, h2, strong, #post {
+                color: greenyellow;
+            }
+
+            div {
+                border-width: 2px;
+                border-color: greenyellow;
+                border-style: solid;
+                padding: 0px 4px 4px 4px;
+                margin-top: 32px;
+            }
+
+            div h2 {
+                margin: -24px auto 0;
+                background-color: black;
+                width: max-content;
+                padding: 4px 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>brooke location</h1>
+
+        <div>
+            <h2>beacon</h2>
+            <p>last seen <strong id="last_seen">last seen</strong> in <strong id="city">city</strong>, <strong id="region">region</strong>, <strong id="country">country</strong> (<strong id="asn">asn</strong>)</p>
+        </div>
+
+        <div>
+            <h2>laptop</h2>
+            <p>battery is at <strong id="battery">percentage</strong></p>
+            <p>volume is at <strong id="volume">volume</strong></p>
+            <p>focused app is <strong id="focused_app">focused app</strong></p>
+        </div>
+
+        <div>
+            <h2>music</h2>
+            <p><a><strong id="track">track</strong> by <strong id="artist">artist</strong> on <strong id="album">album</strong></a></p>
+        </div>
+
+        <div>
+            <h2>recent post</h2>
+            <p id="post">post</p>
+        </div>
+
+        <div>
+            <h2>git</h2>
+            <p><a><strong id="message">message</strong> in <strong id="repo">repo</strong></a></p>
+        </div>
+
+        <script>
+            async function update() {
+                const result = await fetch("https://data.breq.dev/");
+                // const result = await fetch("/data");
+                const data = await result.json();
+                console.log(data);
+
+                document.querySelector("#last_seen").textContent = `${(((Date.now() / 1000) - data.beacon.last_seen) / 60).toFixed(0)}m ago`;
+                document.querySelector("#city").textContent = data.beacon.city;
+                document.querySelector("#region").textContent = data.beacon.region;
+                document.querySelector("#country").textContent = data.beacon.country;
+                document.querySelector("#asn").textContent = data.beacon.asn;
+
+                document.querySelector("#battery").textContent = data.battery.percentage;
+                document.querySelector("#volume").textContent = data.volume;
+                document.querySelector("#focused_app").textContent = data.focused_app;
+
+                document.querySelector("#track").textContent = data.music.track;
+                document.querySelector("#artist").textContent = data.music.artist;
+                document.querySelector("#album").textContent = data.music.album;
+
+                document.querySelector("#post").innerHTML = data.posts.text;
+
+                document.querySelector("#message").innerHTML = data.git.commit.message;
+                document.querySelector("#repo").innerHTML = data.git.repo;
+
+
+                setTimeout(update, 5000);
+            };
+
+            setTimeout(update, 0);
+        </script>
+    </body>
+</html>

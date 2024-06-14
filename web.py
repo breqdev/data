@@ -3,7 +3,7 @@ import redis
 import time
 import json
 import requests
-from flask import Flask, jsonify, redirect, request
+from flask import Flask, jsonify, redirect, request, send_file
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,9 +12,12 @@ r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
 app = Flask(__name__)
 
-
 @app.route("/")
 def index():
+    return send_file("static/index.html")
+
+@app.route("/data")
+def data():
     response = jsonify(
         {
             "name": "Brooke Chalmers",
