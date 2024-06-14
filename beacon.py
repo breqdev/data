@@ -13,26 +13,15 @@ load_dotenv()
 
 enabled = True
 
-
-# Now drawing from 'AC Power'
-#  -InternalBattery-0 (id=22478947)       9%; AC attached; not charging present: true
-
-# Now drawing from 'Battery Power'
-#  -InternalBattery-0 (id=22478947)       9%; discharging; 0:38 remaining present: true
-#         Battery Warning: Early
-
-
 def ping():
     output = subprocess.check_output(["pmset", "-g", "batt"]).decode("utf-8")
     lines = output.split("\n")
+    source = lines[0].removeprefix("Now drawing from '").split("'")[0]
+    percentage = re.search(r"\d+\%", lines[1]).group()[:-1]
     try:
-        source = lines[0].removeprefix("Now drawing from '").split("'")[0]
-        percentage = int(re.search(r"\d+%", lines[1]).group()[:-1])
         time = re.search(r"\d+:\d+", lines[1]).group()
-    except:
-        source = "Unknown"
-        percentage = 0
-        time = "0:00"
+    except Exception as e:
+        time = "N/A"
 
     volume = subprocess.check_output(
         ["osascript", "-e", "output volume of (get volume settings)"]
@@ -56,10 +45,10 @@ def ping():
             "token": os.environ.get("BEACON_TOKEN"),
             "battery": {
                 "source": source,
-                "percentage": percentage,
+                "percentage": percentage + "%",
                 "time_remaining": time,
             },
-            "volume": int(volume),
+            "volume": volume.strip() + "%",
             "focused_app": focused_app,
         },
     ).raise_for_status()
@@ -80,12 +69,7 @@ schedule_thread.start()
 
 def create_image(width, height, color1, color2):
     # Generate an image and draw a pattern
-    image = Image.new("RGB", (width, height), color1)
-    dc = ImageDraw.Draw(image)
-    dc.rectangle((width // 2, 0, width, height // 2), fill=color2)
-    dc.rectangle((0, height // 2, width // 2, height), fill=color2)
-
-    return image
+    return Image.open("beacon.png")
 
 
 def toggle_enable(icon: pystray.Icon, item: pystray.MenuItem):

@@ -40,82 +40,91 @@ def refresh_spotify_token():
 
 
 def get_playing():
-    auth_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access")
-
-    if not auth_token:
-        refresh_spotify_token()
+    try:
         auth_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access")
 
-    if not auth_token:
-        return
+        if not auth_token:
+            refresh_spotify_token()
+            auth_token = r.get(f"spotify:auth:{os.environ.get('SPOTIFY_USER_ID')}:access")
 
-    playing = requests.get(
-        "https://api.spotify.com/v1/me/player/currently-playing",
-        headers={"Authorization": f"Bearer {auth_token}", "Accept": "application/json"},
-    )
-    playing.raise_for_status()
+        if not auth_token:
+            return
 
-    if playing.status_code == 204:
-        r.delete("spotify:playing:id")
-        r.delete("spotify:playing:artist")
-        r.delete("spotify:playing:album")
-        r.delete("spotify:playing:track")
-        return
+        playing = requests.get(
+            "https://api.spotify.com/v1/me/player/currently-playing",
+            headers={"Authorization": f"Bearer {auth_token}", "Accept": "application/json"},
+        )
+        playing.raise_for_status()
 
-    data = playing.json()
-    r.set("spotify:playing:id", data["item"]["id"])
-    r.set(
-        "spotify:playing:artist",
-        json.dumps([artist["name"] for artist in data["item"]["artists"]]),
-    )
-    r.set("spotify:playing:album", data["item"]["album"]["name"])
-    r.set("spotify:playing:track", data["item"]["name"])
+        if playing.status_code == 204:
+            r.delete("spotify:playing:id")
+            r.delete("spotify:playing:artist")
+            r.delete("spotify:playing:album")
+            r.delete("spotify:playing:track")
+            return
+
+        data = playing.json()
+        r.set("spotify:playing:id", data["item"]["id"])
+        r.set(
+            "spotify:playing:artist",
+            json.dumps([artist["name"] for artist in data["item"]["artists"]]),
+        )
+        r.set("spotify:playing:album", data["item"]["album"]["name"])
+        r.set("spotify:playing:track", data["item"]["name"])
+    except Exception as e:
+        print(e)
 
 
 schedule.every(15).seconds.do(get_playing)
 
 
 def get_github_activity():
-    activity = requests.get(
-        f"https://api.github.com/users/{os.environ.get('GITHUB_USER_ID')}/events",
-    )
-    activity.raise_for_status()
+    try:
+        activity = requests.get(
+            f"https://api.github.com/users/{os.environ.get('GITHUB_USER_ID')}/events",
+        )
+        activity.raise_for_status()
 
-    events = activity.json()
+        events = activity.json()
 
-    for event in events:
-        if event["type"] == "PushEvent":
-            r.set("github:push:repo", event["repo"]["name"])
-            r.set(
-                "github:push:branch",
-                event["payload"]["ref"].removeprefix("refs/heads/"),
-            )
-            r.set(
-                "github:push:commit:message", event["payload"]["commits"][0]["message"]
-            )
-            r.set("github:push:commit:sha", event["payload"]["commits"][0]["sha"])
-            r.set(
-                "github:push:commit:url",
-                f"https://github.com/{event['repo']['name']}/commit/{event['payload']['commits'][0]['sha']}",
-            )
-            break
+        for event in events:
+            if event["type"] == "PushEvent":
+                r.set("github:push:repo", event["repo"]["name"])
+                r.set(
+                    "github:push:branch",
+                    event["payload"]["ref"].removeprefix("refs/heads/"),
+                )
+                r.set(
+                    "github:push:commit:message", event["payload"]["commits"][0]["message"]
+                )
+                r.set("github:push:commit:sha", event["payload"]["commits"][0]["sha"])
+                r.set(
+                    "github:push:commit:url",
+                    f"https://github.com/{event['repo']['name']}/commit/{event['payload']['commits'][0]['sha']}",
+                )
+                break
+    except Exception as e:
+        print(e)
 
 
 schedule.every(1).minutes.do(get_github_activity)
 
 
 def get_tweets():
-    resp = requests.get(
-        f"https://tacobelllabs.net/api/v1/accounts/{os.getenv('MASTODON_USER_ID')}/statuses"
-    )
-    resp.raise_for_status()
+    try:
+        resp = requests.get(
+            f"https://tacobelllabs.net/api/v1/accounts/{os.getenv('MASTODON_USER_ID')}/statuses"
+        )
+        resp.raise_for_status()
 
-    tweets = resp.json()
-    tweet = tweets[0]
+        tweets = resp.json()
+        tweet = tweets[0]
 
-    r.set("twitter:tweet:id", tweet["id"])
-    r.set("twitter:tweet:text", tweet["content"])
-    r.set("twitter:tweet:created_at", tweet["created_at"])
+        r.set("twitter:tweet:id", tweet["id"])
+        r.set("twitter:tweet:text", tweet["content"])
+        r.set("twitter:tweet:created_at", tweet["created_at"])
+    except Exception as e:
+        print(e)
 
 
 schedule.every(1).minutes.do(get_tweets)
