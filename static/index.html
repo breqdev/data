@@ -72,8 +72,7 @@
 
         <script>
             async function update() {
-                const result = await fetch("https://data.breq.dev/");
-                // const result = await fetch("/data");
+                const result = await fetch("/data");
                 const data = await result.json();
                 console.log(data);
 
