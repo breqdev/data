@@ -1,125 +1,175 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>brooke location</title>
-        <style>
-            @font-face {
-                font-family: 'OCR A Extended';
-                src: url('/static/OCRA.ttf');
-            }
+  <head>
+    <title>brooke location</title>
+    <style>
+      @font-face {
+        font-family: "OCR A Extended";
+        src: url("/static/OCRA.ttf");
+      }
 
-            body {
-                font-family: 'OCR A Extended';
-                background-color: black;
-                color: lightgray;
-                text-align: center;
-                max-width: 600px;
-                margin: 32px auto;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
+      body {
+        font-family: "OCR A Extended";
+        background-color: black;
+        color: lightgray;
+        text-align: center;
+        max-width: 1000px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 32px 16px;
+        margin: 0 auto;
+      }
 
-            a {
-                background-color: black;
-                color: lightgray;
-                text-decoration: none;
-            }
+      main {
+        display: grid;
+        width: 100%;
+        gap: 8px 24px;
+        grid-template-areas: "beacon" "laptop" "git" "music" "post";
+        max-width: 600px;
+        margin: 0 auto;
+      }
 
-            h1, h2, strong, #post {
-                color: greenyellow;
-            }
+      @media (min-width: 1000px) {
+        main {
+          grid-template-columns: 1fr 1fr;
+          grid-template-areas: "beacon laptop" "git laptop" "music post";
+          max-width: inherit;
+        }
+      }
 
-            div {
-                border-width: 2px;
-                border-color: greenyellow;
-                border-style: solid;
-                padding: 0px 12px 4px 12px;
-                margin-top: 32px;
-            }
+      a {
+        background-color: black;
+        color: lightgray;
+        text-decoration: none;
+      }
 
-            div h2 {
-                margin: -24px auto 0;
-                background-color: black;
-                width: max-content;
-                padding: 4px 8px;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>brooke location</h1>
+      h1,
+      h2,
+      strong,
+      #post {
+        color: greenyellow;
+      }
 
-        <div>
-            <h2>beacon</h2>
-            <p>last seen <strong id="last_seen">last seen</strong> in <strong id="city">city</strong>, <strong id="region">region</strong>, <strong id="country">country</strong> (<strong id="asn">asn</strong>)</p>
-        </div>
+      div {
+        border-width: 2px;
+        border-color: greenyellow;
+        border-style: solid;
+        padding: 0px 12px 4px 12px;
+        margin-top: 32px;
+      }
 
-        <div>
-            <h2>laptop</h2>
-            <p>battery is at <strong id="battery">percentage</strong></p>
-            <p>volume is at <strong id="volume">volume</strong></p>
-            <p>focused app is <strong id="focused_app">focused app</strong></p>
-        </div>
+      div h2 {
+        margin: -24px auto 0;
+        background-color: black;
+        width: max-content;
+        padding: 4px 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>brooke location</h1>
 
-        <div>
-            <h2>music</h2>
-            <p id="track_listing"><a id="spotify_link"><strong id="track">track</strong> by <strong id="artist">artist</strong> on <strong id="album">album</strong></a></p>
-            <p id="no_music">not currently playing music</p>
-        </div>
+    <main>
+      <div style="grid-area: beacon">
+        <h2>beacon</h2>
+        <p>
+          last seen <strong id="last_seen">last seen</strong> in
+          <strong id="city">city</strong>, <strong id="region">region</strong>,
+          <strong id="country">country</strong> (<strong id="asn">asn</strong>)
+        </p>
+      </div>
 
-        <div>
-            <h2>recent post</h2>
-            <a id="post">post</a>
-        </div>
+      <div style="grid-area: laptop">
+        <h2>laptop</h2>
+        <p>battery is at <strong id="battery">percentage</strong></p>
+        <p>volume is at <strong id="volume">volume</strong></p>
+        <p>focused app is <strong id="focused_app">focused app</strong></p>
+      </div>
 
-        <div>
-            <h2>git</h2>
-            <p><a id="github_link"><strong id="message">message</strong> in <strong id="repo">repo</strong></a></p>
-        </div>
+      <div style="grid-area: music">
+        <h2>music</h2>
+        <p id="track_listing">
+          <a id="spotify_link"
+            ><strong id="track">track</strong> by
+            <strong id="artist">artist</strong> on
+            <strong id="album">album</strong></a
+          >
+        </p>
+        <p id="no_music">not currently playing music</p>
+      </div>
 
-        <p style="color: lightgray;">public JSON API available <a href="/data" style="color: greenyellow;">here</a></p>
+      <div style="grid-area: post">
+        <h2>recent post</h2>
+        <a id="post">post</a>
+      </div>
 
-        <script>
-            async function update() {
-                const result = await fetch("https://data.breq.dev/data");
-                const data = await result.json();
-                console.log(data);
+      <div style="grid-area: git">
+        <h2>git</h2>
+        <p>
+          <a id="github_link"
+            ><strong id="message">message</strong> in
+            <strong id="repo">repo</strong></a
+          >
+        </p>
+      </div>
+    </main>
 
-                document.querySelector("#last_seen").textContent = `${(((Date.now() / 1000) - data.beacon.last_seen) / 60).toFixed(0)}m ago`;
-                document.querySelector("#city").textContent = data.beacon.city;
-                document.querySelector("#region").textContent = data.beacon.region;
-                document.querySelector("#country").textContent = data.beacon.country;
-                document.querySelector("#asn").textContent = data.beacon.asn;
+    <p style="color: lightgray">
+      public JSON API available
+      <a href="/data" style="color: greenyellow">here</a>
+    </p>
 
-                document.querySelector("#battery").textContent = data.battery.percentage;
-                document.querySelector("#volume").textContent = data.volume;
-                document.querySelector("#focused_app").textContent = data.focused_app;
+    <script>
+      async function update() {
+        const result = await fetch("https://data.breq.dev/data");
+        const data = await result.json();
+        console.log(data);
 
-                if (data.music.track) {
-                    document.querySelector("#track_listing").style.display = "block";
-                    document.querySelector("#no_music").style.display = "none";
+        document.querySelector("#last_seen").textContent = `${(
+          (Date.now() / 1000 - data.beacon.last_seen) /
+          60
+        ).toFixed(0)}m ago`;
+        document.querySelector("#city").textContent = data.beacon.city;
+        document.querySelector("#region").textContent = data.beacon.region;
+        document.querySelector("#country").textContent = data.beacon.country;
+        document.querySelector("#asn").textContent = data.beacon.asn;
 
-                    document.querySelector("#track").textContent = data.music.track;
-                    document.querySelector("#artist").textContent = data.music.artist;
-                    document.querySelector("#album").textContent = data.music.album;
-                    document.querySelector("#spotify_link").href = `https://open.spotify.com/track/${data.music.spotify_id}`;
-                } else {
-                    document.querySelector("#track_listing").style.display = "none";
-                    document.querySelector("#no_music").style.display = "block";
-                }
+        document.querySelector("#battery").textContent =
+          data.battery.percentage;
+        document.querySelector("#volume").textContent = data.volume;
+        document.querySelector("#focused_app").textContent = data.focused_app;
 
-                document.querySelector("#post").innerHTML = data.posts.text;
-                document.querySelector("#post").href = `https://tacobelllabs.net/@breq/${data.posts.id}`;
+        if (data.music.track) {
+          document.querySelector("#track_listing").style.display = "block";
+          document.querySelector("#no_music").style.display = "none";
 
-                document.querySelector("#message").innerHTML = data.git.commit.message;
-                document.querySelector("#repo").innerHTML = data.git.repo;
-                document.querySelector("#github_link").href = `https://github.com/${data.git.repo}/commit/${data.git.commit.sha}`;
+          document.querySelector("#track").textContent = data.music.track;
+          document.querySelector("#artist").textContent = data.music.artist;
+          document.querySelector("#album").textContent = data.music.album;
+          document.querySelector(
+            "#spotify_link"
+          ).href = `https://open.spotify.com/track/${data.music.spotify_id}`;
+        } else {
+          document.querySelector("#track_listing").style.display = "none";
+          document.querySelector("#no_music").style.display = "block";
+        }
 
+        document.querySelector("#post").innerHTML = data.posts.text;
+        document.querySelector(
+          "#post"
+        ).href = `https://tacobelllabs.net/@breq/${data.posts.id}`;
 
-                setTimeout(update, 5000);
-            };
+        document.querySelector("#message").innerHTML = data.git.commit.message;
+        document.querySelector("#repo").innerHTML = data.git.repo;
+        document.querySelector(
+          "#github_link"
+        ).href = `https://github.com/${data.git.repo}/commit/${data.git.commit.sha}`;
 
-            setTimeout(update, 0);
-        </script>
-    </body>
+        setTimeout(update, 5000);
+      }
+
+      setTimeout(update, 0);
+    </script>
+  </body>
 </html>
